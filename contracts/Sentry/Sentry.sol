@@ -85,7 +85,10 @@ abstract contract Sentry is AccessControlEnumerable {
 		external
 		onlyRole(DEFAULT_ADMIN_ROLE)
 	{
-		require(sanctionsList != _sanctionsList, 'Should be a new address');
+		require(
+			address(sanctionsList) != address(_sanctionsList),
+			'Should be a new address'
+		);
 		sanctionsList = _sanctionsList;
 		emit UpdateSanctionsList(address(sanctionsList));
 	}
