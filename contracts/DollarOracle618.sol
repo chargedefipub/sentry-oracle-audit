@@ -20,9 +20,9 @@ contract DollarOracle618 is Epoch {
 	/* ========== STATE VARIABLES ========== */
 
 	// uniswap
-	address public token0;
-	address public token1;
-	IUniswapV2Pair public pair;
+	address public immutable token0;
+	address public immutable token1;
+	IUniswapV2Pair public immutable pair;
 	uint256 public immutable token0PriceMultiplier;
 	uint256 public immutable token1PriceMultiplier;
 
@@ -43,31 +43,31 @@ contract DollarOracle618 is Epoch {
 		uint256 _startTime
 	) Epoch(_period, _startTime, 0) {
 		pair = _pair;
-		token0 = pair.token0();
-		token1 = pair.token1();
-		price0CumulativeLast = pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
-		price1CumulativeLast = pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
+		token0 = _pair.token0();
+		token1 = _pair.token1();
+		price0CumulativeLast = _pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
+		price1CumulativeLast = _pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
 		uint112 reserve0;
 		uint112 reserve1;
-		(reserve0, reserve1, blockTimestampLast) = pair.getReserves();
+		(reserve0, reserve1, blockTimestampLast) = _pair.getReserves();
 		require(reserve0 != 0 && reserve1 != 0, 'Oracle: NO_RESERVES'); // ensure that there's liquidity in the pair
 		require(
-			IERC20Metadata(token0).decimals() == 18 ||
-				IERC20Metadata(token1).decimals() == 18,
+			IERC20Metadata(_pair.token0()).decimals() == 18 ||
+				IERC20Metadata(_pair.token1()).decimals() == 18,
 			'One token must be 18 decimals'
 		);
 		require(
-			IERC20Metadata(token0).decimals() == 6 ||
-				IERC20Metadata(token1).decimals() == 6,
+			IERC20Metadata(_pair.token0()).decimals() == 6 ||
+				IERC20Metadata(_pair.token1()).decimals() == 6,
 			'One token must be 6 decimals'
 		);
 		// since amountOut for tokens will be based off the paired liquidity token, we should use the decimals from the pairing token
 		// to compute the price multiplier
 		token0PriceMultiplier = uint256(
-			10**(uint256(18) - (IERC20Metadata(token1).decimals()))
+			10**(uint256(18) - (IERC20Metadata(_pair.token1()).decimals()))
 		);
 		token1PriceMultiplier = uint256(
-			10**(uint256(18) - (IERC20Metadata(token0).decimals()))
+			10**(uint256(18) - (IERC20Metadata(_pair.token0()).decimals()))
 		);
 	}
 
